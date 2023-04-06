@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/paint-react/static/css/main.d02128d0.css",
-    "main.js": "/paint-react/static/js/main.617886e2.js",
+    "main.js": "/paint-react/static/js/main.2c0f70f3.js",
     "static/js/787.4f3e0d40.chunk.js": "/paint-react/static/js/787.4f3e0d40.chunk.js",
     "index.html": "/paint-react/index.html",
     "main.d02128d0.css.map": "/paint-react/static/css/main.d02128d0.css.map",
-    "main.617886e2.js.map": "/paint-react/static/js/main.617886e2.js.map",
+    "main.2c0f70f3.js.map": "/paint-react/static/js/main.2c0f70f3.js.map",
     "787.4f3e0d40.chunk.js.map": "/paint-react/static/js/787.4f3e0d40.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.d02128d0.css",
-    "static/js/main.617886e2.js"
+    "static/js/main.2c0f70f3.js"
   ]
 }
