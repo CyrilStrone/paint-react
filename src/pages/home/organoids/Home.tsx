@@ -3,33 +3,38 @@ import { useEffect, useState } from "react";
 import "../styles/Home.css"
 
 type Item = {
-  id: number;
-  color: string;
+  id: number
+  color: string
 };
-
+type Table = {
+  height: number
+  width: number
+  rows: number
+  columns: number
+};
 export const Home = () => {
-  const [record, setRecord] = useState(false);  //Добавить новую запись в историю
-  const [border, setBorder] = useState(true);  //Границы
-  const [isMouseDown, setIsMouseDown] = useState(false);  //Проверка нажатия мышки
-  const [color, setColor] = useState("#aabbcc");  //Выбранный цвет
+  const [record, setRecord] = useState<boolean>(false);  //Добавить новую запись в историю
+  const [border, setBorder] = useState<boolean>(true);  //Границы
+  const [isMouseDown, setIsMouseDown] = useState<boolean>(false);  //Проверка нажатия мышки
+  const [color, setColor] = useState<string>("#aabbcc");  //Выбранный цвет
   const [tableInfoHistoryIndex, setTableInfoHistoryIndex] = useState<any>(undefined); //Индекс позиции в массиве гридов
-  const [viewTable, setViewTable] = useState<any>([]);  //Основной грид
-  const [viewTableHistory, setViewTableHistory] = useState<any>([]);  //Массив гридов, история
-  const [tableInfo, setTableInfo] = useState<any>({ //Настройки грида
+  const [viewTable, setViewTable] = useState<Item[]>([]);  //Основной грид
+  const [viewTableHistory, setViewTableHistory] = useState<Item[][]>([]);  //Массив гридов, история
+  const [tableInfo, setTableInfo] = useState<Table>({ //Настройки грида
     height: 200,
     width: 200,
     rows: 5,
     columns: 5,
   });
-  let defTable = {  //Сброс настроек грида
+  let defTable:Table = {  //Сброс настроек грида
     height: 200,
     width: 200,
     rows: 5,
     columns: 5
   }
   const updateItemById = (id: number, updateFn: (item: Item) => Item) => {  //Обновление основного грида
-    setViewTable((prevState: any) => {
-      return prevState.map((item: any) => {
+    setViewTable((prevState: Item[]) => {
+      return prevState.map((item: Item) => {
         if (item.id === id) {
           return updateFn(item);
         }
@@ -39,8 +44,8 @@ export const Home = () => {
   };
   const handleMouseMove = (id: number) => { //Мышка на элементе
     if (isMouseDown) { //Проверка на нажатие мышки
-      const check = viewTable.find((item: any) => item.id === id);
-      if (check.color !== color) { //Проверка на повтор цвета
+      const check = viewTable.find((item: Item) => item.id === id);
+      if (check && check.color !== color) { //Проверка на повтор цвета
         updateItemById(id, (item) => {
           return { ...item, color: color };
         });
@@ -57,8 +62,8 @@ export const Home = () => {
   };
   const handleMouseClick = (id: number) => {  //Мышка клик
     setIsMouseDown(false);
-    const check = viewTable.find((item: any) => item.id === id);
-    if (check.color !== color) { //Проверка на повтор цвета
+    const check = viewTable.find((item: Item) => item.id === id);
+    if (check && check.color !== color) { //Проверка на повтор цвета
       updateItemById(id, (item) => {
         return { ...item, color: color };
       });
@@ -66,7 +71,7 @@ export const Home = () => {
   };
   useEffect(() => { //Обновление основного грида при помощи индекса истории
     if (tableInfoHistoryIndex !== undefined && tableInfoHistoryIndex !== viewTableHistory.length) {
-      const objectIndex = viewTableHistory.find((obj: any, i: any) => i === (tableInfoHistoryIndex));
+      const objectIndex = viewTableHistory.find((obj: Item[], i: number) => i === (tableInfoHistoryIndex));
       if (objectIndex) {
         setViewTable(objectIndex);  //Обновление отображаемого грида
       }
@@ -74,7 +79,7 @@ export const Home = () => {
   }, [tableInfoHistoryIndex])
   useEffect(() => { //Обновление настроек грида
     let newViewTable = tableInfo.rows * tableInfo.columns;
-    let newViewTableArray: any = [];
+    let newViewTableArray: Item[] = [];
     for (let i = 0; i < newViewTable; i++) {
       newViewTableArray.push({ id: i, color: "" })
     }
@@ -89,11 +94,14 @@ export const Home = () => {
     setIsMouseDown(false)
   }, [color])
   useEffect(() => { //Реакция на новую запись в историю
-    if (viewTable.length !== 0) {
+    if (viewTable && viewTable.length !== 0) {
       setViewTableHistory([...viewTableHistory, viewTable])
     }
   }, [record]);
 
+  useEffect(()=>{
+    console.log("viewTableHistory",viewTableHistory)
+  },[viewTableHistory])
   return (
     <div className="Home">
       <div className="Home__Title">Cyril Strone Paint</div>
@@ -182,7 +190,7 @@ export const Home = () => {
         </div>
       </div>
       <div className="Home__Table" onMouseDown={() => { handleMouseDown() }} onMouseUp={() => { handleMouseUp() }} style={{ gridTemplateColumns: `repeat(${tableInfo.columns}, ${tableInfo.height}px)`, gridTemplateRows: `repeat(${tableInfo.rows}, ${tableInfo.width}px)`}}>
-        {viewTable.map((e: any, id: any) =>
+        {viewTable && viewTable.map((e: Item, id: number) =>
           <div key={id} className="Home__Table__Item" onClick={() => { handleMouseClick(e.id) }} onMouseMove={() => { handleMouseMove(e.id) }} style={{ backgroundColor: `${e.color}`, width: `${tableInfo.height}px`, height: `${tableInfo.width}px`,border: border ? "1px solid black" : "0px solid black"  }}>
           </div>
         )}
