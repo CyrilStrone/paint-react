@@ -1,0 +1,13 @@
+.Home {
+}
+.table {
+  display: grid;
+  justify-content: center;
+}
+.table__Item {
+    border: 1px solid brown;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
