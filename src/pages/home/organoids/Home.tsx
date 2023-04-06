@@ -1,5 +1,5 @@
 import { HexColorPicker } from "react-colorful";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "../styles/Home.css"
 
 type Item = {
@@ -8,34 +8,26 @@ type Item = {
 };
 
 export const Home = () => {
-  const [checkTime, setCheckTime] = useState(false);
-
-  const [record, setRecord] = useState(false);
-  const [oldId, setOldId] = useState<number>();
-  const [isMouseDown, setIsMouseDown] = useState(false);
-  const [color, setColor] = useState("#aabbcc");
-  const [brushOrEraser, setBrushOrEraser] = useState(false);
-
-  const [tableInfo, setTableInfo] = useState<any>({
-    height: 25,
-    width: 50,
-    rows: 10,
-    columns: 10,
+  const [record, setRecord] = useState(false);  //Добавить новую запись в историю
+  const [border, setBorder] = useState(true);  //Границы
+  const [isMouseDown, setIsMouseDown] = useState(false);  //Проверка нажатия мышки
+  const [color, setColor] = useState("#aabbcc");  //Выбранный цвет
+  const [tableInfoHistoryIndex, setTableInfoHistoryIndex] = useState<any>(undefined); //Индекс позиции в массиве гридов
+  const [viewTable, setViewTable] = useState<any>([]);  //Основной грид
+  const [viewTableHistory, setViewTableHistory] = useState<any>([]);  //Массив гридов, история
+  const [tableInfo, setTableInfo] = useState<any>({ //Настройки грида
+    height: 200,
+    width: 200,
+    rows: 5,
+    columns: 5,
   });
-  const [defTable] = useState<any>({
-    height: 25,
-    width: 50,
-    rows: 10,
-    columns: 10,
-  });
-
-  const [tableInfoHistory, setTableInfoHistory] = useState<any>([]);
-  const [tableInfoHistoryId, setTableInfoHistoryId] = useState<any>(1);
-
-  const [viewTable, setViewTable] = useState<any>([]);
-  const [viewTableHistory, setViewTableHistory] = useState<any>([]);
-
-  const updateItemById = (id: number, updateFn: (item: Item) => Item) => {
+  let defTable = {  //Сброс настроек грида
+    height: 200,
+    width: 200,
+    rows: 5,
+    columns: 5
+  }
+  const updateItemById = (id: number, updateFn: (item: Item) => Item) => {  //Обновление основного грида
     setViewTable((prevState: any) => {
       return prevState.map((item: any) => {
         if (item.id === id) {
@@ -45,105 +37,72 @@ export const Home = () => {
       });
     });
   };
-
-  const handleMouseMove = (id: number) => {
-    if (isMouseDown) {
-      console.log("handleMouseMove")
-      if (oldId !== id) {
-        const check = viewTable.find((item: any) => item.id === id);
-        if (check.color !== color) {
-          updateItemById(id, (item) => {
-            return { ...item, color: color };
-          });
-        }
+  const handleMouseMove = (id: number) => { //Мышка на элементе
+    if (isMouseDown) { //Проверка на нажатие мышки
+      const check = viewTable.find((item: any) => item.id === id);
+      if (check.color !== color) { //Проверка на повтор цвета
+        updateItemById(id, (item) => {
+          return { ...item, color: color };
+        });
       }
     }
   }
-  const handleMouseDown = () => {
-    setCheckTime(false)
-    console.log("tableInfoHistoryId", tableInfoHistoryId)
-    // setTableInfoHistory(tableInfoHistory.slice(0, tableInfoHistoryId - 1))
-    setTableInfoHistoryId(1)
+  const handleMouseDown = () => { //Мышка нажата
+    setTableInfoHistoryIndex(viewTableHistory.length)
     setIsMouseDown(!isMouseDown);
   };
-  const handleMouseUp = () => {
+  const handleMouseUp = () => { //Мышка отжата
     setIsMouseDown(!isMouseDown);
-    setRecord(!record)
+    setRecord(!record) //Новая запись в историю
   };
-  const handleMouseClick = (id: number) => {
+  const handleMouseClick = (id: number) => {  //Мышка клик
     setIsMouseDown(false);
     const check = viewTable.find((item: any) => item.id === id);
-    if (check.color !== color) {
+    if (check.color !== color) { //Проверка на повтор цвета
       updateItemById(id, (item) => {
         return { ...item, color: color };
       });
     }
   };
-
-  const handleTime = (time: boolean) => {
-    setCheckTime(true)
-    if (time) {
-      setTableInfoHistoryId(tableInfoHistoryId - 1)
-    } else {
-      setTableInfoHistoryId(tableInfoHistoryId + 1)
-
-    }
-
-  };
-  useEffect(() => {
-    console.log(viewTableHistory.length, viewTableHistory, tableInfoHistoryId)
-    if (checkTime) {
-      if (viewTableHistory[viewTableHistory.length - tableInfoHistoryId]) {
-        setViewTable(viewTableHistory[viewTableHistory.length - tableInfoHistoryId]);
+  useEffect(() => { //Обновление основного грида при помощи индекса истории
+    if (tableInfoHistoryIndex !== undefined && tableInfoHistoryIndex !== viewTableHistory.length) {
+      const objectIndex = viewTableHistory.find((obj: any, i: any) => i === (tableInfoHistoryIndex));
+      if (objectIndex) {
+        setViewTable(objectIndex);  //Обновление отображаемого грида
       }
     }
-  }, [tableInfoHistoryId])
-
-  useEffect(() => {
+  }, [tableInfoHistoryIndex])
+  useEffect(() => { //Обновление настроек грида
     let newViewTable = tableInfo.rows * tableInfo.columns;
     let newViewTableArray: any = [];
     for (let i = 0; i < newViewTable; i++) {
       newViewTableArray.push({ id: i, color: "" })
     }
     if (newViewTableArray.length !== 0) {
+      setTableInfoHistoryIndex(0)
+      setViewTableHistory([])
       setViewTable(newViewTableArray)
     }
-    setRecord(!record)
+    setRecord(!record) //Новая запись в историю
   }, [tableInfo])
-
-
   useEffect(() => {
     setIsMouseDown(false)
-    setOldId(undefined)
   }, [color])
-
-  useEffect(() => {
+  useEffect(() => { //Реакция на новую запись в историю
     if (viewTable.length !== 0) {
       setViewTableHistory([...viewTableHistory, viewTable])
-      setTableInfoHistory([...tableInfoHistory, tableInfo])
     }
   }, [record]);
 
-
   return (
     <div className="Home">
-      <div className="tool-panel">
-        <div className="tool-panel-item">
+      <div className="Home__Title">Cyril Strone Paint</div>
+      <div className="Home__ToolBar">
+        <div className="Home__ToolBar__Item">
           <HexColorPicker color={color} onChange={setColor} />
         </div>
-        <div className="tool-panel-item">
-          <select
-            value={brushOrEraser.toString()}
-            onChange={(event: any) => {
-              setBrushOrEraser(event.target.value);
-            }}
-          >
-            <option value={"true"}>Кисть</option>
-            <option value={"false"}>Ластик</option>
-          </select>
-        </div>
-        <div className="tool-panel-item">
-          <div className="tool-panel-input">
+        <div className="Home__ToolBar__Item">
+          <div className="Home__ToolBar__Item__Input">
             <label>Высота:</label>
             <input
               type="number"
@@ -153,7 +112,7 @@ export const Home = () => {
               }}
             />
           </div>
-          <div className="tool-panel-input">
+          <div className="Home__ToolBar__Item__Input">
             <label>Ширина:</label>
             <input
               type="number"
@@ -163,7 +122,7 @@ export const Home = () => {
               }}
             />
           </div>
-          <div className="tool-panel-input">
+          <div className="Home__ToolBar__Item__Input">
             <label>Кол-во строк:</label>
             <input
               type="number"
@@ -173,7 +132,7 @@ export const Home = () => {
               }}
             />
           </div>
-          <div className="tool-panel-input">
+          <div className="Home__ToolBar__Item__Input">
             <label>Кол-во столбцов:</label>
             <input
               type="number"
@@ -183,7 +142,17 @@ export const Home = () => {
               }}
             />
           </div>
-          <div className="tool-panel-item">
+          <div className="Home__ToolBar__Item__Input">
+            <label>Границы</label>
+            <input
+              type="checkbox"
+              checked={border}
+              onChange={(event) => {
+                setBorder(event.target.checked)
+              }}
+            />
+          </div>
+          <div className="Home__ToolBar__Item__Button">
             <button
               onClick={() => {
                 setTableInfo(defTable);
@@ -192,32 +161,29 @@ export const Home = () => {
               Отмена
             </button>
           </div>
-          <div className="tool-panel-item">
+          <div className="Home__ToolBar__Item__Button">
             <button
               onClick={() => {
-                handleTime(false);
+                tableInfoHistoryIndex !== 0 &&
+                  setTableInfoHistoryIndex(tableInfoHistoryIndex - 1);
               }}
             >
               Назад
             </button>
             <button
               onClick={() => {
-                handleTime(true);
+                tableInfoHistoryIndex !== viewTableHistory.length - 1 &&
+                  setTableInfoHistoryIndex(tableInfoHistoryIndex + 1);
               }}
             >
               Вперед
             </button>
           </div>
-          <div>
-          </div>
-          {/* <div className="tool-panel-item">
-            <button onClick={updateTable}>Обновить сетку</button>
-          </div> */}
         </div>
       </div>
-      <div className="table" onMouseDown={() => { handleMouseDown() }} onMouseUp={() => { handleMouseUp() }} style={{ gridTemplateColumns: `repeat(${tableInfo.columns}, ${tableInfo.height}px)`, gridTemplateRows: `repeat(${tableInfo.rows}, ${tableInfo.width}px)` }}>
-        {viewTable.map((e: any) =>
-          <div className="table__Item" onClick={() => { handleMouseClick(e.id) }} onMouseMove={() => { handleMouseMove(e.id) }} style={{ backgroundColor: `${e.color}`, width: `${tableInfo.height}px`, height: `${tableInfo.width}px` }}>
+      <div className="Home__Table" onMouseDown={() => { handleMouseDown() }} onMouseUp={() => { handleMouseUp() }} style={{ gridTemplateColumns: `repeat(${tableInfo.columns}, ${tableInfo.height}px)`, gridTemplateRows: `repeat(${tableInfo.rows}, ${tableInfo.width}px)`}}>
+        {viewTable.map((e: any, id: any) =>
+          <div key={id} className="Home__Table__Item" onClick={() => { handleMouseClick(e.id) }} onMouseMove={() => { handleMouseMove(e.id) }} style={{ backgroundColor: `${e.color}`, width: `${tableInfo.height}px`, height: `${tableInfo.width}px`,border: border ? "1px solid black" : "0px solid black"  }}>
           </div>
         )}
       </div>
