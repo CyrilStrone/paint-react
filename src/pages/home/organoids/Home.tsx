@@ -15,6 +15,7 @@ type Table = {
 export const Home = () => {
   const [record, setRecord] = useState<boolean>(false);  //Добавить новую запись в историю
   const [border, setBorder] = useState<boolean>(true);  //Границы
+  const [click, setClick] = useState<boolean>(true);  //Click
   const [isMouseDown, setIsMouseDown] = useState<boolean>(false);  //Проверка нажатия мышки
   const [color, setColor] = useState<string>("#aabbcc");  //Выбранный цвет
   const [tableInfoHistoryIndex, setTableInfoHistoryIndex] = useState<any>(undefined); //Индекс позиции в массиве гридов
@@ -26,7 +27,7 @@ export const Home = () => {
     rows: 5,
     columns: 5,
   });
-  let defTable:Table = {  //Сброс настроек грида
+  let defTable: Table = {  //Сброс настроек грида
     height: 200,
     width: 200,
     rows: 5,
@@ -43,7 +44,7 @@ export const Home = () => {
     });
   };
   const handleMouseMove = (id: number) => { //Мышка на элементе
-    if (isMouseDown) { //Проверка на нажатие мышки
+    if (isMouseDown && click) { //Проверка на нажатие мышки
       const check = viewTable.find((item: Item) => item.id === id);
       if (check && check.color !== color) { //Проверка на повтор цвета
         updateItemById(id, (item) => {
@@ -53,20 +54,28 @@ export const Home = () => {
     }
   }
   const handleMouseDown = () => { //Мышка нажата
+    console.log("handleMouseDown")
     setTableInfoHistoryIndex(viewTableHistory.length)
-    setIsMouseDown(!isMouseDown);
+    setIsMouseDown(true);
   };
   const handleMouseUp = () => { //Мышка отжата
-    setIsMouseDown(!isMouseDown);
-    setRecord(!record) //Новая запись в историю
+    if (click) {
+      console.log("handleMouseUp")
+      setIsMouseDown(false);
+      setRecord(!record) //Новая запись в историю
+    }
   };
   const handleMouseClick = (id: number) => {  //Мышка клик
+    console.log("handleMouseClick")
+    setClick(false)
     setIsMouseDown(false);
     const check = viewTable.find((item: Item) => item.id === id);
     if (check && check.color !== color) { //Проверка на повтор цвета
       updateItemById(id, (item) => {
         return { ...item, color: color };
       });
+      setClick(true)
+      setRecord(!record) //Новая запись в историю
     }
   };
   useEffect(() => { //Обновление основного грида при помощи индекса истории
@@ -99,9 +108,9 @@ export const Home = () => {
     }
   }, [record]);
 
-  useEffect(()=>{
-    console.log("viewTableHistory",viewTableHistory)
-  },[viewTableHistory])
+  useEffect(() => {
+    console.log("viewTableHistory", viewTableHistory)
+  }, [viewTableHistory])
   return (
     <div className="Home">
       <div className="Home__Title">Cyril Strone Paint</div>
@@ -189,9 +198,9 @@ export const Home = () => {
           </div>
         </div>
       </div>
-      <div className="Home__Table" onMouseDown={() => { handleMouseDown() }} onMouseUp={() => { handleMouseUp() }} style={{ gridTemplateColumns: `repeat(${tableInfo.columns}, ${tableInfo.height}px)`, gridTemplateRows: `repeat(${tableInfo.rows}, ${tableInfo.width}px)`}}>
+      <div className="Home__Table" style={{ gridTemplateColumns: `repeat(${tableInfo.columns}, ${tableInfo.height}px)`, gridTemplateRows: `repeat(${tableInfo.rows}, ${tableInfo.width}px)` }}>
         {viewTable && viewTable.map((e: Item, id: number) =>
-          <div key={id} className="Home__Table__Item" onClick={() => { handleMouseClick(e.id) }} onMouseMove={() => { handleMouseMove(e.id) }} style={{ backgroundColor: `${e.color}`, width: `${tableInfo.height}px`, height: `${tableInfo.width}px`,border: border ? "1px solid black" : "0px solid black"  }}>
+          <div key={id} className="Home__Table__Item" onClick={() => { handleMouseClick(e.id) }} onMouseDown={() => { handleMouseDown() }} onMouseUp={() => { handleMouseUp() }}  onMouseMove={() => { handleMouseMove(e.id) }} style={{ backgroundColor: `${e.color}`, width: `${tableInfo.height}px`, height: `${tableInfo.width}px`, border: border ? "1px solid black" : "0px solid black" }}>
           </div>
         )}
       </div>
