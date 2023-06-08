@@ -1,3 +1,5 @@
+### Status - development  
+
 # Cyril Strone Paint
 
 ### `npm i`
